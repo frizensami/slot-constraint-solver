@@ -16,7 +16,6 @@ Some of my students have signed up to visit someplace. There are multiple slots 
 - Students can pick one or more slots as their availability
 - They can only be assigned to one slot at most
 - We want as far as possible for a first-come-first-served solution: students who signed up first are guaranteed to get a slot vs anyone who signs up after
-- 
 
 ## Modelling
 
