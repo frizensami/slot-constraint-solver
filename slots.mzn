@@ -5,24 +5,29 @@ There are some N slots available to students. There are a maximum number of stud
 
 */
 
+
+% How many students per slot
+int: students_per_slot = 1;
+
 % Defining all possible slot names
 %enum Slots = { thu_2pm, fri_2pm, fri_3pm, tue_2pm, tue_3pm, wed_2pm, wed_3pm };
 enum Slots = { thu_2pm, fri_2pm };
-% How many slots there are total
-int: total_slots = 7;
-% How many students per slot
-int: students_per_slot = 20;
-% How many students total
-int: total_students = 2;
-
-
 % Defining all possible student names
 enum Students = { sriram, theo };
 
-% Perhaps we want an array where each student is a row and the value is the slot they selected
-array [Students, Slots] of bool: slot_preferences = [|false, false |false, false |];
+% Indicates if a student wanted a specific slot
+array [Students, Slots] of bool: slot_preferences = [|true, false |true, false |];
 
-output [show(slot_preferences)];
+% Final output - which student is assigned to which slot
+array [Students] of var Slots: slot_assignments;
+
+% Make sure that there's no more than students_per_slot assignments for each slot
+constraint forall(slot in Slots)(count(slot_assignments, slot) <= students_per_slot);
+
+% Make sure that if a student gets a slot, it was in their slot preference
+constraint forall(student in Students)(slot_preferences[student, slot_assignments[student]]);
+
+output [show(slot_preferences), show(slot_assignments)];
 
 
 
