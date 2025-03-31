@@ -44,7 +44,19 @@ constraint forall(slot1 in Slots)
 
 % Ensure FCFS ordering: i.e., if a student that submitted later (higher student 'number') is assigned to a slot, all students with 'lower numbers' must be assigned. 
 % This is problematic since if any earlier student cannot get a slot (e.g., they want a mutually exclusive slot), noone else can get a slot.
-%constraint forall(student1 in Students)(forall(student2 in Students)((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
+constraint forall(student1 in Students)(forall(student2 in Students)((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
+
+% var 1..(card(Students)+1): cutoff;
+
+% Enforce that every student before the cutoff is assigned,
+% and every student at or after the cutoff is unassigned.
+% constraint 
+%   forall(student in Students)(
+%     (student < cutoff -> slot_assignments[student] > 1) /\
+%     (student >= cutoff -> slot_assignments[student] = 1)
+%   );
+
+
 
 % First value of enum (none) is none
 solve minimize count(slot_assignments, 1);
