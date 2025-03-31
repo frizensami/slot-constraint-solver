@@ -1,4 +1,5 @@
-students_per_slot = 1;
+students_per_slot = 2;
 Students = { sriram, theo };
-Slots = { apr_10_2pm,apr_11_2pm };
-slot_preferences = [|false,true|true,true|];
+Slots = { none,apr_10_2pm,apr_11_2pm };
+slot_preferences = [|true,false,true|true,true,true|];
+slot_mutual_exclusiveness = [|false,false,false|false,false,false|false,false,false|];

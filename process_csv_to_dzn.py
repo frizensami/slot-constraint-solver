@@ -2,13 +2,23 @@ import csv
 
 data = []
 
-date_map = {"11th April (Friday) 2pm": "apr_11_2pm",
+NO_SLOT = "_no_slot"
+
+date_map = {f"{NO_SLOT}":f"{NO_SLOT}",
+            "11th April (Friday) 2pm": "apr_11_2pm",
             "11th April (Friday) 3pm": "apr_11_3pm",
             "10th April (Thursday) 2pm": "apr_10_2pm",
             "15th April (Tuesday) 2pm": "apr_15_2pm",
             "15th April (Tuesday) 3pm": "apr_15_3pm",
             "16th April (Wednesday) 3pm": "apr_16_3pm",
             "16th April (Wednesday) 2pm":"apr_16_2pm"}
+
+slot_mutual_exclusive = {"apr_11_2pm": "apr_11_3pm",
+                         "apr_11_3pm": "apr_11_2pm",
+                         "apr_15_2pm": "apr_15_3pm",
+                         "apr_15_3pm": "apr_15_2pm",
+                         "apr_16_3pm": "apr_16_2pm",
+                         "apr_16_2pm": "apr_16_3pm"}
 
 date_map_keys_sorted = sorted(date_map.keys())
 date_map_items_sorted = sorted(date_map.values())
@@ -33,9 +43,16 @@ print(students)
 
 # For a given student date availabilities
 def slot_prefs_f(dates):
-    return ",".join([str(d in dates).lower() for d in date_map_items_sorted])
+    original_dates = [str(d in dates).lower() for d in date_map_items_sorted]
+    # Replace the first option by true (enable the 'none' option even though it didn't match
+    original_dates[0] = "true"
+    return ",".join(original_dates)
 
+# Build a list of not-allowed slots given a particular slot
+def build_mutual_exclusive(date):
+    return ",".join(["true" if date == slot_mutual_exclusive.get(d, None) else "false" for d in date_map_items_sorted])
 
+slot_mutual_exclusive_list = "|".join(map(build_mutual_exclusive, date_map_items_sorted))
 
 with open('signups.dzn', 'w') as f:
     # Students per slot
@@ -47,9 +64,11 @@ with open('signups.dzn', 'w') as f:
     l2 = f"Slots = {{ {','.join(date_map_items_sorted)} }};\n"
     f.write(l2)
     # For each student, we want a false/true boolean for each of the date_map_items_sorted if that's what is in their list
-    #slot_prefs = ",".join(list(map(lambda d: slot_prefs_f(d[1]), data)))
     slot_prefs = "|".join(list(map(lambda d: slot_prefs_f(d[1]), data)))
     print(slot_prefs)
     #l3 = f"slot_preferences = array2d(Students,Slots,[{slot_prefs}]);"
-    l3 = f"slot_preferences = [|{slot_prefs}|];"
+    l3 = f"slot_preferences = [|{slot_prefs}|];\n"
     f.write(l3)
+    l4 = f"slot_mutual_exclusiveness = [|{slot_mutual_exclusive_list}|];\n"
+    print(l4)
+    f.write(l4)
