@@ -16,7 +16,12 @@ enum Slots = { thu_2pm, fri_2pm };
 enum Students = { sriram, theo };
 
 % Indicates if a student wanted a specific slot
-array [Students, Slots] of bool: slot_preferences = [|true, false |true, false |];
+array [Students, Slots] of bool: slot_preferences = array2d(Students, Slots,
+[
+false, true, 
+true, false
+]
+);
 
 % Final output - which student is assigned to which slot
 array [Students] of var Slots: slot_assignments;
@@ -26,6 +31,8 @@ constraint forall(slot in Slots)(count(slot_assignments, slot) <= students_per_s
 
 % Make sure that if a student gets a slot, it was in their slot preference
 constraint forall(student in Students)(slot_preferences[student, slot_assignments[student]]);
+
+% Make sure that certain slots are mutually exclusive
 
 output [show(slot_preferences), show(slot_assignments)];
 
