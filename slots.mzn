@@ -5,9 +5,8 @@ There are some N slots available to students. There are a maximum number of stud
 
 */
 
-
 % How many students per slot
-int: students_per_slot = 1;
+int: students_per_slot;
 
 % Defining all possible slot names
 %enum Slots = { thu_2pm, fri_2pm, fri_3pm, tue_2pm, tue_3pm, wed_2pm, wed_3pm };
@@ -31,17 +30,17 @@ array [Students, Slots] of bool: slot_preferences;
 % Final output - which student is assigned to which slot
 array [Students] of var Slots: slot_assignments;
 
-% Make sure that there's no more than students_per_slot assignments for each slot
+% No more than students_per_slot assignments for each slot
 constraint forall(slot in Slots)(count(slot_assignments, slot) <= students_per_slot);
 
-% Make sure that if a student gets a slot, it was in their slot preference
+% If a student gets a slot, it was in their slot preference
 constraint forall(student in Students)(slot_preferences[student, slot_assignments[student]]);
 
 % Make sure that certain slots are mutually exclusive
 
 % Ensure FCFS ordering: i.e., if a student that submitted later (higher student 'number') is assigned to a slot, all students with 'lower numbers' must be assigned. 
 
-output [show(slot_preferences), show(slot_assignments)];
+output [show(slot_preferences), "\n", show(slot_assignments)];
 
 
 

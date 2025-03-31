@@ -1,0 +1,4 @@
+students_per_slot = 1;
+Students = { sriram, theo };
+Slots = { apr_10_2pm,apr_11_2pm };
+slot_preferences = [|false,true|true,true|];

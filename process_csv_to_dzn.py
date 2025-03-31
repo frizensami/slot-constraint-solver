@@ -31,12 +31,25 @@ for d in data:
 print(date_map_keys_sorted)
 print(students)
 
+# For a given student date availabilities
+def slot_prefs_f(dates):
+    return ",".join([str(d in dates).lower() for d in date_map_items_sorted])
+
+
+
 with open('signups.dzn', 'w') as f:
+    # Students per slot
+    l0 = "students_per_slot = 19;\n"
+    f.write(l0);
     # Write enum of students first
     l1 = f"Students = {{ {','.join(students)} }};\n"
     f.write(l1)
     l2 = f"Slots = {{ {','.join(date_map_items_sorted)} }};\n"
     f.write(l2)
     # For each student, we want a false/true boolean for each of the date_map_items_sorted if that's what is in their list
-    l3 = f"slot_preferences = [array2d(Students,Slots,[{slot_prefs}])];"
+    #slot_prefs = ",".join(list(map(lambda d: slot_prefs_f(d[1]), data)))
+    slot_prefs = "|".join(list(map(lambda d: slot_prefs_f(d[1]), data)))
+    print(slot_prefs)
+    #l3 = f"slot_preferences = array2d(Students,Slots,[{slot_prefs}]);"
+    l3 = f"slot_preferences = [|{slot_prefs}|];"
     f.write(l3)
