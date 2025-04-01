@@ -1,38 +1,49 @@
 /*
 Slot assignment problem, with mutually exclusive slots, and FCFS student signups.
-
-There are some N slots available to students. There are a maximum number of students that can be assigned to any slot (say S).
-
 */
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Parameters assigned via external data (.dzn) file
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % How many students per slot
 int: students_per_slot;
 
 % Defining all possible slot names
-%enum Slots = { thu_2pm, fri_2pm, fri_3pm, tue_2pm, tue_3pm, wed_2pm, wed_3pm };
-%enum Slots = { thu_2pm, fri_2pm };
+% The first slot name is required to refer to "no slot assigned". It has value 1, being the first enum value.
 enum Slots;
 
 % Defining all possible student names
-%enum Students = { sriram, theo };
 enum Students;
 
-% Indicates if a student wanted a specific slot
+% Indicates which slots each student wants.
 array [Students, Slots] of bool: slot_preferences;
 
-% Mutually exclusive list of lists
+% Mutually exclusive list of lists that indicates which slots cannot be opened together.
 array [Slots, Slots] of bool: slot_mutual_exclusiveness; 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Variable array for results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Final output - which student is assigned to which slot
 array [Students] of var Slots: slot_assignments;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Constraints and costs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 % No more than students_per_slot assignments for each slot
 constraint forall(slot in Slots)(slot > 1 -> count(slot_assignments, slot) <= students_per_slot);
 
 % If a student gets a slot, it must be in their slot preference
-% slot_preferences[student] gets the 1D array of their preferences
-% slot_assignments[student] gets their assigned slot
-% therefore, checking the expression below checks if the assigned slot is "true" in their preference list
+%   slot_preferences[student] gets the 1D array of their preferences
+%   slot_assignments[student] gets their assigned slot
+%   therefore, checking the expression below checks if the assigned slot is "true" in their preference list
 constraint forall(student in Students)
   (slot_preferences[student, slot_assignments[student]]);
 
@@ -43,29 +54,49 @@ constraint forall(slot1 in Slots)
         count(slot_assignments, slot2) == 0));
 
 % Ensure FCFS ordering: i.e., if a student that submitted later (higher student 'number') is assigned to a slot, all students with 'lower numbers' must be assigned. 
-% This is problematic since if any earlier student cannot get a slot (e.g., they want a mutually exclusive slot), noone else can get a slot.
+%   This is sometimes problematic since if any earlier student cannot get a slot (e.g., they want a mutually exclusive slot), noone else can get a slot.
+%   Disable it if some students are too 'picky' and disallow every student after them from getting a slot.
 constraint forall(student1 in Students)
   (forall(student2 in Students)
     ((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
     
 
 % Combined cost of making sure every student is assigned + a small cost (not worth any students being unassigned)
-%  for not compressing into fewer slots  
+%  for not compressing into fewer slots.  
 function var float: cost(array [Students] of var Slots: slot_assignments) = 
  count(slot_assignments, 1) + 0.01*card(array2set(slot_assignments));
 
+  
+  
+% Calculate the number of assignments for each slot that's not the no-slot.
+array[int] of var int: slot_count = 
+  [ sum(student in Students)(if slot_assignments[student] == slot then 1 else 0 endif) | slot in 2..card(Slots) ];
+% Get only positive values
+array[int] of var opt int: slot_count_positive = [i | i in slot_count where i > 0];
+% Cost for minimizing imbalance between slots
+var int: imbalance = max(slot_count_positive) - min(slot_count_positive);
 
-% First value of enum (none) is none
-solve minimize cost(slot_assignments);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Solve minimization problem and print results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Cost of assignments now includes imbalance (which is much less than the cost of any student not being assigned)
+% I.e., solve to get all students a slot first, then try to correct slot imbalances.
+solve minimize cost(slot_assignments) + 0.0001*imbalance;
 
 output [
   show(student) ++ "\t" ++ show(slot_assignments[student]) ++ "\n"
   | student in Students
 ];
-output "Number of slots: (including no-slot): " ++ show(card(array2set(slot_assignments)));
 
-
-
+output "Number of slots: (including no-slot): " ++ show(card(array2set(slot_assignments))) ++ "\n";
+output ["Slots: " ++ show(Slots) ++ "\n"];
+output ["No slot students: " ++ show(count(slot_assignments, 1)) ++ "\n"];
+output ["Slot counts: " ++ show(slot_count_positive) ++ "\n"];
+output ["Imbalance: " ++ show(imbalance) ++ "\n"];
 
 
 
