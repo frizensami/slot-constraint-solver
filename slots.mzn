@@ -49,25 +49,6 @@ constraint forall(student1 in Students)
     ((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
     
 
-
-% var 1..(card(Students)+1): cutoff;
-
-% Enforce that every student before the cutoff is assigned,
-% and every student at or after the cutoff is unassigned.
-% constraint 
-%   forall(student in Students)(
-%     (student < cutoff -> slot_assignments[student] > 1) /\
-%     (student >= cutoff -> slot_assignments[student] = 1)
-%   );
-
-% function var float: cost(array [Students] of var Slots: slot_assignments) = 
-% if count(slot_assignments, 1) != 0 
-%   % If at least 1 student is not assigned, the cost is the number of unassigned slots
-%   then count(slot_assignments, 1) 
-%   % otherwise, return a cost that's < 1, but increased each time by number of unique slots
-%   else card(array2set(slot_assignments))%sum([0.01 |i in slot_assignments where i > 1]) 
-%   endif;
-  
 % Combined cost of making sure every student is assigned + a small cost (not worth any students being unassigned)
 %  for not compressing into fewer slots  
 function var float: cost(array [Students] of var Slots: slot_assignments) = 
