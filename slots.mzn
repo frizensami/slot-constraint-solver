@@ -44,7 +44,11 @@ constraint forall(slot1 in Slots)
 
 % Ensure FCFS ordering: i.e., if a student that submitted later (higher student 'number') is assigned to a slot, all students with 'lower numbers' must be assigned. 
 % This is problematic since if any earlier student cannot get a slot (e.g., they want a mutually exclusive slot), noone else can get a slot.
-constraint forall(student1 in Students)(forall(student2 in Students)((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
+constraint forall(student1 in Students)
+  (forall(student2 in Students)
+    ((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
+    
+
 
 % var 1..(card(Students)+1): cutoff;
 
@@ -56,15 +60,28 @@ constraint forall(student1 in Students)(forall(student2 in Students)((student1 >
 %     (student >= cutoff -> slot_assignments[student] = 1)
 %   );
 
+% function var float: cost(array [Students] of var Slots: slot_assignments) = 
+% if count(slot_assignments, 1) != 0 
+%   % If at least 1 student is not assigned, the cost is the number of unassigned slots
+%   then count(slot_assignments, 1) 
+%   % otherwise, return a cost that's < 1, but increased each time by number of unique slots
+%   else card(array2set(slot_assignments))%sum([0.01 |i in slot_assignments where i > 1]) 
+%   endif;
+  
+% Combined cost of making sure every student is assigned + a small cost (not worth any students being unassigned)
+%  for not compressing into fewer slots  
+function var float: cost(array [Students] of var Slots: slot_assignments) = 
+ count(slot_assignments, 1) + 0.01*card(array2set(slot_assignments));
 
 
 % First value of enum (none) is none
-solve minimize count(slot_assignments, 1);
+solve minimize cost(slot_assignments);
 
 output [
   show(student) ++ "\t" ++ show(slot_assignments[student]) ++ "\n"
   | student in Students
 ];
+output "Number of slots: (including no-slot): " ++ show(card(array2set(slot_assignments)));
 
 
 
