@@ -20,3 +20,12 @@ Some of my students have signed up to visit someplace. There are multiple slots 
 ## Modelling
 
 How do we model this? 
+
+## Running
+
+1. Install `minizinc`
+1. Convert a signup sheet (signups.csv) to dzn via `python process_csv_to_dzn.py`
+	- Example of header row: `Id,Start time,Completion time,Email,Name,What is your full (passport) name?,What is your NUS email?,"Which slots can you make for the NSCC visit? Please select as many as possible since we're limited to 20 people per slot.�`
+	- Example of a student row: `9,3/27/2025 18:35,3/27/2025 18:36,redacted@u.nus.edu,Redacted Redacted,REDACTED REDACTED,redacted@u.nus.edu,10th April (Thursday) 2pm;11th April (Friday) 2pm;11th April (Friday) 3pm;15th April (Tuesday) 2pm;15th April (Tuesday) 3pm;16th April (Wednesday) 2pm;16th April (Wednesday) 3pm;`
+	- To manually do this, look at `test.dzn` for a minimal example
+1. E.g, run `minizinc --solver highs slots.mzn signups.dzn` 
