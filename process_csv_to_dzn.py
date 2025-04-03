@@ -31,8 +31,12 @@ with open('signups.csv', encoding='windows-1252') as f:
         name = row[5].strip()
         # Append in order
         students.append("_".join(name.lower().split(' ')))
-        # Split by semicolon, remove last empty string
-        times = list(map(lambda d: date_map[d],sorted(row[-1].strip().split(";")[:-1])))
+        # Split by semicolon
+        times = sorted(row[-1].strip().split(";"))
+        # Remove all empty strings
+        times = list(filter(lambda x: x != "", times))
+        # Map to our time variable names
+        times = list(map(lambda d: date_map[d], times))
         data.append((name,times))
 
 

@@ -64,7 +64,7 @@ constraint forall(student1 in Students)
 % Combined cost of making sure every student is assigned + a small cost (not worth any students being unassigned)
 %  for not compressing into fewer slots.  
 function var float: cost(array [Students] of var Slots: slot_assignments) = 
- count(slot_assignments, 1) + 0.01*card(array2set(slot_assignments));
+ count(slot_assignments, 1) + 0.1*card(array2set(slot_assignments));
 
   
   
@@ -85,10 +85,10 @@ var int: imbalance = max(slot_count_positive) - min(slot_count_positive);
 
 % Cost of assignments now includes imbalance (which is much less than the cost of any student not being assigned)
 % I.e., solve to get all students a slot first, then try to correct slot imbalances.
-solve minimize cost(slot_assignments) + 0.0001*imbalance;
+solve minimize 10*cost(slot_assignments) + 0.0001*imbalance;
 
 output [
-  show(student) ++ "\t" ++ show(slot_assignments[student]) ++ "\n"
+  show(student) ++ "\t\t" ++ show(slot_assignments[student]) ++ "\n"
   | student in Students
 ];
 
