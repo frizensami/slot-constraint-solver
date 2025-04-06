@@ -18,7 +18,13 @@ slot_mutual_exclusive = {"apr_11_2pm": "apr_11_3pm",
                          "apr_15_2pm": "apr_15_3pm",
                          "apr_15_3pm": "apr_15_2pm",
                          "apr_16_3pm": "apr_16_2pm",
-                         "apr_16_2pm": "apr_16_3pm"}
+                         "apr_16_2pm": "apr_16_3pm",
+                         # Modelling slots that are now cancelled via reflexive exclusiveness
+                         "apr_11_2pm": "apr_11_2pm",
+                         "apr_11_3pm": "apr_11_3pm",
+                         "apr_15_2pm": "apr_15_2pm",
+                         "apr_15_3pm": "apr_15_3pm",
+                         }
 
 date_map_keys_sorted = sorted(date_map.keys())
 date_map_items_sorted = sorted(date_map.values())
@@ -35,6 +41,7 @@ with open('signups.csv', encoding='windows-1252') as f:
         times = sorted(row[-1].strip().split(";"))
         # Remove all empty strings
         times = list(filter(lambda x: x != "", times))
+        print(times)
         # Map to our time variable names
         times = list(map(lambda d: date_map[d], times))
         data.append((name,times))

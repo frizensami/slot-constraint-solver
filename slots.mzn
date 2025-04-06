@@ -56,9 +56,9 @@ constraint forall(slot1 in Slots)
 % Ensure FCFS ordering: i.e., if a student that submitted later (higher student 'number') is assigned to a slot, all students with 'lower numbers' must be assigned. 
 %   This is sometimes problematic since if any earlier student cannot get a slot (e.g., they want a mutually exclusive slot), noone else can get a slot.
 %   Disable it if some students are too 'picky' and disallow every student after them from getting a slot.
-constraint forall(student1 in Students)
-  (forall(student2 in Students)
-    ((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
+% constraint forall(student1 in Students)
+%   (forall(student2 in Students)
+%     ((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
     
 
 % Combined cost of making sure every student is assigned + a small cost (not worth any students being unassigned)
@@ -88,7 +88,7 @@ var int: imbalance = max(slot_count_positive) - min(slot_count_positive);
 solve minimize 10*cost(slot_assignments) + 0.0001*imbalance;
 
 output [
-  show(student) ++ "\t\t" ++ show(slot_assignments[student]) ++ "\n"
+  show(student) ++ "\t" ++ show(slot_assignments[student]) ++ "\n"
   | student in Students
 ];
 
