@@ -61,11 +61,19 @@ constraint forall(slot1 in Slots)
 %     ((student1 > student2) /\ (slot_assignments[student1] > 1) -> slot_assignments[student2] > 1));
     
 
-% Combined cost of making sure every student is assigned + a small cost (not worth any students being unassigned)
+% Combined cost if any student is not assigned (+1 per student)
+%  + a small cost (not worth any students being unassigned)
 %  for not compressing into fewer slots.  
+%  array2set of slot assignments finds set of all unique slot assignments, card gets the set size.
+%  The max value of the cost of compressing slots is always less than 1
 function var float: cost(array [Students] of var Slots: slot_assignments) = 
- count(slot_assignments, 1) + 0.1*card(array2set(slot_assignments));
+ count(slot_assignments, 1) + 
+ (1/(card(Slots)+1))*card(array2set(slot_assignments));
+ 
+% Cost for not assigning students in a FCFS-like order
+%  Filter by students that have slots and add (card(Students) - sum_student_idxs_assigned) to the current score
 
+%var float: fcfs_cost =  card(Students) - 
   
   
 % Calculate the number of assignments for each slot that's not the no-slot.
