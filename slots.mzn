@@ -65,16 +65,18 @@ constraint forall(slot1 in Slots)
 %  + a small cost (not worth any students being unassigned)
 %  for not compressing into fewer slots.  
 %  array2set of slot assignments finds set of all unique slot assignments, card gets the set size.
-%  The max value of the cost of compressing slots is always less than 1
+%  The max value of the cost of compressing slots is always less than 1 (which is the cost of a student being unassigned)
 function var float: cost(array [Students] of var Slots: slot_assignments) = 
  count(slot_assignments, 1) + 
  (1/(card(Slots)+1))*card(array2set(slot_assignments));
  
 % Cost for not assigning students in a FCFS-like order
-%  Filter by students that have slots and add (card(Students) - sum_student_idxs_assigned) to the current score
-
-%var float: fcfs_cost =  card(Students) - 
-  
+%  If a student doesn't have a slot, then add that (card(Students) - student's idx) to the cost
+%  In that way, a student higher up on the preference list should get a slot before a student lower down that list
+%  Max value of this cost: N + N-1 + N-2 + ... 0 = (N(N+1))/2
+var float: fcfs_cost = sum(student in Students)(if slot_assignments[student] == 1 then card(Students) - student else 0 endif);
+% Scaled from 0 - 1
+var float: fcfs_cost_scaled = (1 / ((card(Students) * (card(Students)+1))/2)) * fcfs_cost;
   
 % Calculate the number of assignments for each slot that's not the no-slot.
 array[int] of var int: slot_count = 
@@ -93,7 +95,7 @@ var int: imbalance = max(slot_count_positive) - min(slot_count_positive);
 
 % Cost of assignments now includes imbalance (which is much less than the cost of any student not being assigned)
 % I.e., solve to get all students a slot first, then try to correct slot imbalances.
-solve minimize 10*cost(slot_assignments) + 0.0001*imbalance;
+solve minimize 10*cost(slot_assignments) + fcfs_cost_scaled + 0.0001*imbalance;
 
 output [
   show(student) ++ "\t" ++ show(slot_assignments[student]) ++ "\n"
