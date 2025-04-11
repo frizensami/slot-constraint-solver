@@ -5,29 +5,23 @@ data = []
 NO_SLOT = "_no_slot"
 
 date_map = {f"{NO_SLOT}":f"{NO_SLOT}",
-            "11th April (Friday) 2pm": "apr_11_2pm",
-            "11th April (Friday) 3pm": "apr_11_3pm",
-            "10th April (Thursday) 2pm": "apr_10_2pm",
-            "15th April (Tuesday) 2pm": "apr_15_2pm",
-            "15th April (Tuesday) 3pm": "apr_15_3pm",
-            "16th April (Wednesday) 3pm": "apr_16_3pm",
-            "16th April (Wednesday) 2pm":"apr_16_2pm"}
+            "22nd April Session 1: 1pm to 2.45pm": "apr_22_1pm",
+            "22nd April Session 2: 3pm to 5.45pm": "apr_22_3pm",
+            "25th April Session 1: 1pm to 2.45pm": "apr_25_1pm",
+            "25th April Session 2: 3pm to 5.45pm": "apr_25_3pm",
+            }
 
-slot_mutual_exclusive = {"apr_11_2pm": "apr_11_3pm",
-                         "apr_11_3pm": "apr_11_2pm",
-                         "apr_15_2pm": "apr_15_3pm",
-                         "apr_15_3pm": "apr_15_2pm",
-                         "apr_16_3pm": "apr_16_2pm",
-                         "apr_16_2pm": "apr_16_3pm",
-                         # Modelling slots that are now cancelled via reflexive exclusiveness
-                         "apr_11_2pm": "apr_11_2pm",
-                         "apr_11_3pm": "apr_11_3pm",
-                         "apr_15_2pm": "apr_15_2pm",
-                         "apr_15_3pm": "apr_15_3pm",
-                         }
+# Janky but should work
+slot_mutual_exclusive = {
+        "apr_22_1pm": ["apr_25_1pm", "apr_25_3pm"],
+        "apr_22_3pm": ["apr_25_1pm", "apr_25_3pm"],
+        "apr_25_1pm": ["apr_22_1pm", "apr_22_3pm"],
+        "apr_25_3pm": ["apr_22_1pm", "apr_22_3pm"],
+        }
 
 date_map_keys_sorted = sorted(date_map.keys())
 date_map_items_sorted = sorted(date_map.values())
+
 students = []
 dates = []
 with open('signups.csv', encoding='windows-1252') as f:
@@ -43,7 +37,7 @@ with open('signups.csv', encoding='windows-1252') as f:
         times = list(filter(lambda x: x != "", times))
         print(times)
         # Map to our time variable names
-        times = list(map(lambda d: date_map[d], times))
+        times = list(map(lambda d: date_map[d.replace(u'\xa0',' ').strip()], times))
         data.append((name,times))
 
 
@@ -61,13 +55,13 @@ def slot_prefs_f(dates):
 
 # Build a list of not-allowed slots given a particular slot
 def build_mutual_exclusive(date):
-    return ",".join(["true" if date == slot_mutual_exclusive.get(d, None) else "false" for d in date_map_items_sorted])
+    return ",".join(["true" if date in slot_mutual_exclusive.get(d,[]) else "false" for d in date_map_items_sorted])
 
 slot_mutual_exclusive_list = "|".join(map(build_mutual_exclusive, date_map_items_sorted))
 
 with open('signups.dzn', 'w') as f:
     # Students per slot
-    l0 = "students_per_slot = 19;\n"
+    l0 = "students_per_slot = 20;\n"
     f.write(l0);
     # Write enum of students first
     l1 = f"Students = {{ {','.join(students)} }};\n"
